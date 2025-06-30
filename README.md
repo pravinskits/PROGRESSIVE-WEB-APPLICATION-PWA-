@@ -28,3 +28,4 @@ Overall, the application combines modern web capabilities to ensure a fast, reli
 
 Output:
 
+![Image](https://github.com/user-attachments/assets/610d4f26-ae00-453f-9890-4982582fe789)
