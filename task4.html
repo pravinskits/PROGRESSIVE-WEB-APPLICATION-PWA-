@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ShopNow</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  <h1>ShopNow - PWA</h1>
+  <div id="products"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
+*/
+
+// ====== public/app.js ======
+const products = [
+  { id: 1, name: "T-shirt", price: 199 },
+  { id: 2, name: "Sneakers", price: 799 },
+  { id: 3, name: "Backpack", price: 499 },
+];
+
+const container = document.getElementById("products");
+container.innerHTML = products.map(p => `
+  <div>
+    <h3>${p.name}</h3>
+    <p>Rs. ${p.price}</p>
+    <button>Add to Cart</button>
+  </div>
+`).join("");
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js')
+    .then(() => console.log('SW registered'))
+    .catch(err => console.error('SW failed', err));
+}
+
+// ====== public/manifest.json ======
+/*
+{
+  "name": "ShopNow",
+  "short_name": "ShopNow",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2196f3",
+  "icons": [
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+*/
+
+// ====== public/service-worker.js ======
+const CACHE_NAME = 'shopnow-cache-v1';
+const ASSETS = [
+  '/',
+  '/index.html',
+  '/app.js',
+  '/manifest.json'
+];
+
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+  );
+});
+
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.match(e.request).then(response => response || fetch(e.request))
+  );
+});
+
+// ====== server/push-server.js ======
+/*
+const webpush = require('web-push');
+const express = require('express');
+const bodyParser = require('body-parser');
+
+const app = express();
+app.use(bodyParser.json());
+
+const vapidKeys = webpush.generateVAPIDKeys();
+
+webpush.setVapidDetails(
+  'mailto:admin@shopnow.com',
+  vapidKeys.publicKey,
+  vapidKeys.privateKey
+);
+
+app.post('/subscribe', (req, res) => {
+  const subscription = req.body;
+  res.status(201).json({});
+  webpush.sendNotification(subscription, JSON.stringify({
+    title: 'Big Sale!',
+    body: 'Up to 50% off on electronics!'
+  }));
+});
+
+app.listen(3001, () => console.log('Push server on http://localhost:3001'));
+*/
